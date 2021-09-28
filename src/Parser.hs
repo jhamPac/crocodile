@@ -1,14 +1,17 @@
+{-# LANGUAGE FlexibleContexts #-}
 module Parser where
 
-import           Control.Applicative   hiding ((<|>))
-import           Data.Functor.Identity (Identity)
-import qualified Data.Text             as T
 import           LispVal
+
 import           Text.Parsec
-import           Text.Parsec.Expr
 import qualified Text.Parsec.Language  as Lang
 import           Text.Parsec.Text
 import qualified Text.Parsec.Token     as Tok
+
+import           Control.Monad         (mzero)
+import           Data.Char             (digitToInt)
+import           Data.Functor.Identity (Identity)
+import qualified Data.Text             as T
 
 lexer :: Tok.GenTokenParser T.Text () Identity
 lexer = Tok.makeTokenParser style
@@ -24,3 +27,33 @@ style = Lang.emptyDef {
     , Tok.identLetter = digit <|> letter <|> oneOf "?+=|&-/"
     , Tok.reservedOpNames = [ "'", "\""]
 }
+
+parens :: Parser a -> Parser a
+parens = Tok.parens lexer
+
+whitespace :: Parser ()
+whitespace = Tok.whiteSpace lexer
+
+lexeme :: Parser a -> Parser a
+lexeme = Tok.lexeme lexer
+
+quoted :: Parser a -> Parser a
+quoted p = try (char '\'') *> p
+
+identifier :: Parser T.Text
+identifier = T.pack <$> (Tok.identifier lexer <|> specialIdentifier) <?> "identifier"
+    where
+        specialIdentifier :: Parser String
+        specialIdentifier = lexeme $ try $
+            string "-" <|> string "+" <|> string "..."
+
+type Radix = (Integer, Parser Char)
+
+numberWithRadix :: Radix -> Parser Integer
+numberWithRadix (base, baseDigit) = do
+    digits <- many1 baseDigit
+    let n = foldl (\x d -> base * x + toInteger (digitToInt d)) 0 digits
+    seq n (return n)
+
+decimal :: Parser Integer
+decimal = Tok.decimal lexer
