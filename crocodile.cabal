@@ -27,6 +27,7 @@ library
   exposed-modules:
       Lib
       LispVal
+      Parser
   other-modules:
       Paths_crocodile
   hs-source-dirs:

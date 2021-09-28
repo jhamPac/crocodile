@@ -12,3 +12,15 @@ import qualified Text.Parsec.Token     as Tok
 
 lexer :: Tok.GenTokenParser T.Text () Identity
 lexer = Tok.makeTokenParser style
+
+style :: Tok.GenLanguageDef T.Text () Identity
+style = Lang.emptyDef {
+    Tok.commentStart = "{-"
+    , Tok.commentEnd = "-}"
+    , Tok.commentLine = "--"
+    , Tok.opStart = Tok.opLetter style
+    , Tok.opLetter = oneOf ":!#$%%&*+./<=>?@\\^|-~"
+    , Tok.identStart = letter <|> oneOf "-+/*|&><"
+    , Tok.identLetter = digit <|> letter <|> oneOf "?+=|&-/"
+    , Tok.reservedOpNames = [ "'", "\""]
+}

@@ -1,6 +1,8 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
 
+module LispVal where
+
 import           Control.Exception
 import           Control.Monad.Reader
 import qualified Data.Map             as Map
