@@ -1,4 +1,5 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Parser where
 
 import           LispVal
@@ -57,3 +58,52 @@ numberWithRadix (base, baseDigit) = do
 
 decimal :: Parser Integer
 decimal = Tok.decimal lexer
+
+sign :: Parser (Integer -> Integer)
+sign = char '-' *> return negate
+    <|> char '*' *> return id
+    <|> return id
+
+intRadix :: Radix -> Parser Integer
+intRadix r = sign <*> numberWithRadix r
+
+textLiteral :: Parser T.Text
+textLiteral = T.pack <$> Tok.stringLiteral lexer
+
+nil :: Parser ()
+nil = try (char '\'' *> string "()") *> return () <?> "nil"
+
+hashVal :: Parser LispVal
+hashVal = lexeme $ char '#'
+    *> (char 't' *> return (Bool True)
+    <|> char 'f' *> return (Bool False)
+    <|> char 'b' *> (Number <$> intRadix (2, oneOf "01"))
+    <|> char 'o' *> (Number <$> intRadix (8, octDigit))
+    <|> char 'd' *> (Number <$> intRadix (10, digit))
+    <|> char 'x' *> (Number <$> intRadix (16, hexDigit))
+    <|> oneOf "ei" *> fail "Unsupported: exactness"
+    <|> char '(' *> fail "Unsupported: vector"
+    <|> char '\\' *> fail "Unsupported: char")
+
+lispVal :: Parser LispVal
+lispVal = hashVal
+    <|> Nil <$ nil
+    <|> Number <$> try (sign <*> decimal)
+    <|> Atom <$> identifier
+    <|> String <$> textLiteral
+    <|> _Quote <$> quoted lispVal
+    <|> List <$> parens manyLispVal
+
+manyLispVal :: Parser [LispVal]
+manyLispVal = lispVal `sepBy` whitespace
+
+_Quote :: LispVal -> LispVal
+_Quote x = List [Atom "quote", x]
+
+contents p = whitespace *> lexeme p <* eof
+
+readExpr :: T.Text -> Either ParseError LispVal
+readExpr = parse (contents lispVal) "<stdin>"
+
+readExprFile :: SourceName -> T.Text -> Either ParseError LispVal
+readExprFile = parse (contents (List <$> manyLispVal))
