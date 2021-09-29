@@ -28,12 +28,15 @@ library
       Lib
       LispVal
       Parser
+      Query
   other-modules:
       Paths_crocodile
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      HDBC
+    , HDBC-sqlite3
+    , base >=4.7 && <5
     , containers
     , mtl
     , parsec
@@ -48,7 +51,9 @@ executable crocodile-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      HDBC
+    , HDBC-sqlite3
+    , base >=4.7 && <5
     , containers
     , crocodile
     , mtl
@@ -65,7 +70,9 @@ test-suite crocodile-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      HDBC
+    , HDBC-sqlite3
+    , base >=4.7 && <5
     , containers
     , crocodile
     , mtl

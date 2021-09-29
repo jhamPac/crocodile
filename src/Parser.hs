@@ -2,11 +2,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Parser where
 
-import           LispVal
+import           LispVal               (LispVal (Atom, Bool, List, Nil, Number, String))
 
-import           Text.Parsec
+import           Text.Parsec           (ParseError, SourceName, char, digit,
+                                        eof, hexDigit, letter, many1, octDigit,
+                                        oneOf, parse, sepBy, string, try, (<?>),
+                                        (<|>))
 import qualified Text.Parsec.Language  as Lang
-import           Text.Parsec.Text
+import           Text.Parsec.Text      (Parser)
 import qualified Text.Parsec.Token     as Tok
 
 import           Control.Monad         (mzero)
