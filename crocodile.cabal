@@ -25,9 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
-      LispVal
-      Parser
+      PodTypes
       Query
   other-modules:
       Paths_crocodile
