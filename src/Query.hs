@@ -23,6 +23,7 @@ query i =
         -- convert each row into a string
         let rows = map convRow r
 
+        -- mapM_ execute monadic action on each element
         mapM_ putStrLn rows
 
         disconnect conn
