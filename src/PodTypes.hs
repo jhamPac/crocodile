@@ -1,11 +1,11 @@
 module PodTypes where
 
 data Podcast =
-    Podcast {castId :: Integer, castURL :: String} deriving (Eq, Show, Read)
+    Podcast {castID :: Integer, castURL :: String} deriving (Eq, Show, Read)
 
 data Episode =
     Episode {
-        epId   :: Integer,
+        epID   :: Integer,
         epCast :: Podcast,
         epURL  :: String,
         epDone :: Bool
