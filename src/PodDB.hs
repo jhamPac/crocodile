@@ -1,6 +1,6 @@
 module PodDB where
 
-import           Control.Monad         (when)
+import           Control.Monad         (unless, when)
 import           Data.List             (sort)
 import           Database.HDBC
 import           Database.HDBC.Sqlite3
@@ -19,7 +19,7 @@ prepDB dbh = do
         do run dbh "CREATE TABLE podcasts (\
                     \castid INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\
                     \casturl TEXT NOT NULL UNIQUE)" []
-            return ()
+           return ()
 
     unless (elem "episodes" tables) $
         do run dbh "CREATE TABLE episodes (\
@@ -29,6 +29,6 @@ prepDB dbh = do
                     \epdone INTEGER NOT NULL,\
                     \UNIQUE(epcastid, epurl),\
                     \UNIQUE(epcastid, epid))" []
-            return ()
+           return ()
 
-    commit conn
+    commit dbh
