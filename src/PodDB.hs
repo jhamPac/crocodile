@@ -36,10 +36,17 @@ prepDB dbh = do
 addPodcast :: IConnection conn => conn -> Podcast -> IO Podcast
 addPodcast dbh podcast =
     handleSql errorHandler $ do
-        run dbh "INSERT INTO podcasts (castURL) VALUES (?)" [toSql (castURL podcast)]
-        r <- quickQuery' dbh "SELECT castid FROM podcasts WHERE castURL = ?" [toSql (castURL podcast)]
+        run dbh "INSERT INTO podcasts (casturl) VALUES (?)" [toSql (castURL podcast)]
+        r <- quickQuery' dbh "SELECT castid FROM podcasts WHERE casturl = ?" [toSql (castURL podcast)]
         case r of
             [[x]] -> return $ podcast {castID = fromSql x}
             y     -> fail $ "addPodcast: unexpected result: " ++ show y
     where errorHandler e =
             do fail $ "Error adding podcast; does this URL already exist?\n" ++ show e
+
+addEpisode :: IConnection conn => conn -> Episode -> IO ()
+addEpisode dbh ep =
+    run dbh "INSERT OR IGNORE INTO episodes (epcastid, epurl, epdone) \
+                \Values (?, ?, ?)"
+                [toSql (castID . epCast $ ep), toSql (epURL ep), toSql (epDone ep)]
+    >> return ()
