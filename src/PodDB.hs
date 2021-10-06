@@ -50,3 +50,12 @@ addEpisode dbh ep =
                 \Values (?, ?, ?)"
                 [toSql (castID . epCast $ ep), toSql (epURL ep), toSql (epDone ep)]
     >> return ()
+
+updateEpisode :: IConnection conn => conn -> Episode -> IO ()
+updateEpisode dbh episode =
+    run dbh "UPDATE episodes SET epcastid = ?, epurl = ?, epdone = ? Where epid = ?"
+            [toSql (castID . epCast $ episode),
+             toSql (epURL episode),
+             toSql (epDone episode),
+             toSql (epID episode)]
+    >> return ()
