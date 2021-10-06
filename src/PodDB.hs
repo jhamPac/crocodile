@@ -15,20 +15,20 @@ connect fp = do
 prepDB :: IConnection conn => conn -> IO ()
 prepDB dbh = do
     tables <- getTables dbh
-    unless (elem "podcasts" tables) $
-        do run dbh "CREATE TABLE podcasts (\
+    unless (elem "podcasts" tables) $ do
+        run dbh "CREATE TABLE podcasts (\
                     \castid INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\
                     \casturl TEXT NOT NULL UNIQUE)" []
-           return ()
+        return ()
 
-    unless (elem "episodes" tables) $
-        do run dbh "CREATE TABLE episodes (\
+    unless (elem "episodes" tables) $ do
+        run dbh "CREATE TABLE episodes (\
                     \epid INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\
                     \epcastid INTEGER NOT NULL,\
                     \epurl TEXT NOT NULL,\
                     \epdone INTEGER NOT NULL,\
                     \UNIQUE(epcastid, epurl),\
                     \UNIQUE(epcastid, epid))" []
-           return ()
+        return ()
 
     commit dbh
