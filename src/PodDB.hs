@@ -4,7 +4,8 @@ import           Control.Monad         (unless, when)
 import           Data.List             (sort)
 import           Database.HDBC
 import           Database.HDBC.Sqlite3
-import           PodTypes
+import           PodTypes              (Episode (epCast, epDone, epID, epURL),
+                                        Podcast (castID, castURL))
 
 connect :: FilePath -> IO Connection
 connect fp = do
