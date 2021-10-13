@@ -1,0 +1,13 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "crocodile:lib"
+
+    - path: "./app/Main.hs"
+      component: "crocodile:exe:crocodile-exe"
+
+    - path: "./app/Paths_crocodile.hs"
+      component: "crocodile:exe:crocodile-exe"
+
+    - path: "./test"
+      component: "crocodile:test:crocodile-test"
