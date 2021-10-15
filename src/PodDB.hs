@@ -65,3 +65,9 @@ updateEpisode dbh episode =
              toSql (epDone episode),
              toSql (epID episode)]
     >> return ()
+
+removePodcast :: IConnection conn => conn -> Podcast -> IO ()
+removePodcast conn p = do
+    run conn "DELETE FROM episodes WHERE epcastid = ?" [toSql (castID p)]
+    run conn "DELETE FROM podcasts WHERE castid = ?" [toSql(castID p)]
+    return ()
