@@ -11,7 +11,7 @@ connect :: FilePath -> IO Connection
 connect fp = do
     dbh <- connectSqlite3 fp
     prepDB dbh
-    return dbh
+    pure dbh
 
 prepDB :: IConnection conn => conn -> IO ()
 prepDB dbh = do
@@ -20,7 +20,7 @@ prepDB dbh = do
         run dbh "CREATE TABLE podcasts (\
                     \castid INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\
                     \casturl TEXT NOT NULL UNIQUE)" []
-        return ()
+        pure ()
 
     unless (elem "episodes" tables) $ do
         run dbh "CREATE TABLE episodes (\
@@ -30,7 +30,7 @@ prepDB dbh = do
                     \epdone INTEGER NOT NULL,\
                     \UNIQUE(epcastid, epurl),\
                     \UNIQUE(epcastid, epid))" []
-        return ()
+        pure ()
 
     commit dbh
 
@@ -40,7 +40,7 @@ addPodcast dbh podcast =
         run dbh "INSERT INTO podcasts (casturl) VALUES (?)" [toSql (castURL podcast)]
         r <- quickQuery' dbh "SELECT castid FROM podcasts WHERE casturl = ?" [toSql (castURL podcast)]
         case r of
-            [[x]] -> return $ podcast {castID = fromSql x}
+            [[x]] -> pure $ podcast {castID = fromSql x}
             y     -> fail $ "addPodcast: unexpected result: " ++ show y
     where errorHandler e =
             do fail $ "Error adding podcast; does this URL already exist?\n" ++ show e
@@ -50,7 +50,7 @@ addEpisode dbh ep =
     run dbh "INSERT OR IGNORE INTO episodes (epcastid, epurl, epdone) \
                 \Values (?, ?, ?)"
                 [toSql (castID . epCast $ ep), toSql (epURL ep), toSql (epDone ep)]
-    >> return ()
+    >> pure ()
 
 updatePodcast :: IConnection conn => conn -> Podcast -> IO ()
 updatePodcast dbh podcast =
@@ -64,18 +64,18 @@ updateEpisode dbh episode =
              toSql (epURL episode),
              toSql (epDone episode),
              toSql (epID episode)]
-    >> return ()
+    >> pure ()
 
 removePodcast :: IConnection conn => conn -> Podcast -> IO ()
 removePodcast conn p = do
     run conn "DELETE FROM episodes WHERE epcastid = ?" [toSql (castID p)]
     run conn "DELETE FROM podcasts WHERE castid = ?" [toSql(castID p)]
-    return ()
+    pure ()
 
 getPodcasts :: IConnection conn => conn -> IO [Podcast]
 getPodcasts conn = do
     results <- quickQuery' conn "SELECT castid, casturl FROM podcasts ORDER BY castid" []
-    return (map convPodcastRow results)
+    pure (map convPodcastRow results)
 
 convPodcastRow :: [SqlValue] -> Podcast
 convPodcastRow [svID, svURL] =
