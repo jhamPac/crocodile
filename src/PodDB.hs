@@ -5,7 +5,7 @@ import           Data.List             (sort)
 import           Database.HDBC
 import           Database.HDBC.Sqlite3
 import           PodTypes              (Episode (epCast, epDone, epID, epURL),
-                                        Podcast (castID, castURL))
+                                        Podcast (..))
 
 connect :: FilePath -> IO Connection
 connect fp = do
@@ -71,3 +71,14 @@ removePodcast conn p = do
     run conn "DELETE FROM episodes WHERE epcastid = ?" [toSql (castID p)]
     run conn "DELETE FROM podcasts WHERE castid = ?" [toSql(castID p)]
     return ()
+
+getPodcasts :: IConnection conn => conn -> IO [Podcast]
+getPodcasts conn = do
+    results <- quickQuery' conn "SELECT castid, casturl FROM podcasts ORDER BY castid" []
+    return (map convPodcastRow results)
+
+convPodcastRow :: [SqlValue] -> Podcast
+convPodcastRow [svID, svURL] =
+    Podcast {castID = fromSql svID, castURL = fromSql svURL}
+
+convPodcastRow s = error $ "Can't convert podcast row " ++ show s
