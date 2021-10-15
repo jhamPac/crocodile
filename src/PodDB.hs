@@ -4,8 +4,7 @@ import           Control.Monad         (unless, void, when)
 import           Data.List             (sort)
 import           Database.HDBC
 import           Database.HDBC.Sqlite3
-import           PodTypes              (Episode (epCast, epDone, epID, epURL),
-                                        Podcast (..))
+import           PodTypes              (Episode (..), Podcast (..))
 
 connect :: FilePath -> IO Connection
 connect fp = do
@@ -77,8 +76,30 @@ getPodcasts conn = do
     results <- quickQuery' conn "SELECT castid, casturl FROM podcasts ORDER BY castid" []
     pure (map convPodcastRow results)
 
+getPodcast :: IConnection conn => conn -> Integer -> IO (Maybe Podcast)
+getPodcast conn id = do
+    res <- quickQuery' conn "SELECT castid, casturl FROM podcasts WHERE castid = ?" [toSql id]
+    case res of
+        [x] -> pure (Just (convPodcastRow x))
+        []  -> pure Nothing
+        x   -> fail "Some DB error"
+
 convPodcastRow :: [SqlValue] -> Podcast
 convPodcastRow [svID, svURL] =
     Podcast {castID = fromSql svID, castURL = fromSql svURL}
 
 convPodcastRow s = error $ "Can't convert podcast row " ++ show s
+
+getPodcastEpisodes :: IConnection conn => conn -> Podcast -> IO [Episode]
+getPodcastEpisodes conn pc = do
+    r <- quickQuery' conn "SELECT epid, epurl, epdone FROM episodes WHERE epcastid = ?" [toSql (castID pc)]
+    pure (map convEpisodeRow r)
+    where
+        convEpisodeRow [svID, svURL, svDone] = Episode {
+            epID = fromSql svID
+            , epURL = fromSql svURL
+            , epDone = fromSql svDone
+            , epCast = pc
+        }
+
+        convEpisodeRow s = error $ "Can't convert episodes row " ++ show s
