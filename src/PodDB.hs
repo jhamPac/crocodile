@@ -1,6 +1,6 @@
 module PodDB where
 
-import           Control.Monad         (unless, when)
+import           Control.Monad         (unless, void, when)
 import           Data.List             (sort)
 import           Database.HDBC
 import           Database.HDBC.Sqlite3
@@ -51,6 +51,11 @@ addEpisode dbh ep =
                 \Values (?, ?, ?)"
                 [toSql (castID . epCast $ ep), toSql (epURL ep), toSql (epDone ep)]
     >> return ()
+
+updatePodcast :: IConnection conn => conn -> Podcast -> IO ()
+updatePodcast dbh podcast =
+    let f = run dbh "UPDATE podcasts SET casturl = ? WHERE castid = ?" [toSql (castURL podcast), toSql (castID podcast)]
+    in Control.Monad.void f
 
 updateEpisode :: IConnection conn => conn -> Episode -> IO ()
 updateEpisode dbh episode =
