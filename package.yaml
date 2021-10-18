@@ -24,6 +24,7 @@ dependencies:
     - text
     - HDBC
     - HDBC-sqlite3
+    - HaXml
 
 library:
     source-dirs: src
