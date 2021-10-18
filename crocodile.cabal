@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       PodDB
+      PodParser
       PodTypes
       Query
   other-modules:
