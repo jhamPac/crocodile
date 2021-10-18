@@ -1,12 +1,17 @@
 module PodParser where
 
-import           Data.Char
-import           Data.List
-import           PodTypes
-import           Text.XML.HaXml
+import           Data.Char                    ()
+import           Data.List                    ()
+import           PodTypes                     (Episode (..), Podcast)
+import           Text.XML.HaXml               (CFilter, Content (CElem),
+                                               Document (..), Element (..),
+                                               QName (N), Verbatim (verbatim),
+                                               keep, showattr, stdXmlEscaper,
+                                               tag, txt, xmlParse, xmlUnEscape,
+                                               (/>))
 import           Text.XML.HaXml.Html.Generate (showattr)
-import           Text.XML.HaXml.Parse
-import           Text.XML.HaXml.Posn
+import           Text.XML.HaXml.Parse         (xmlParse)
+import           Text.XML.HaXml.Posn          (Posn, noPos)
 
 data PodItem = PodItem {
                         itemTitle      :: String
