@@ -1,13 +1,19 @@
 module PodDownload where
 
-import           Data.Maybe
-import           Database.HDBC
-import           Network.HTTP
-import           Network.URI
-import           PodDB
-import           PodParser
-import           PodTypes
-import           System.IO
+import           Data.Maybe    (fromJust)
+import           Database.HDBC (IConnection (commit))
+import           Network.HTTP  (HeaderName (HdrLocation),
+                                Request (Request, rqBody, rqHeaders, rqMethod, rqURI),
+                                RequestMethod (GET),
+                                Response (rspBody, rspCode), findHeader,
+                                simpleHTTP)
+import           Network.URI   (parseURI)
+import           PodDB         (addEpisode, updateEpisode)
+import           PodParser     (Feed (items), item2ep, parse)
+import           PodTypes      (Episode (epCast, epDone, epID, epURL),
+                                Podcast (castID, castURL))
+import           System.IO     (IOMode (WriteMode), hClose, hPutStr,
+                                openBinaryFile)
 
 downloadURL :: String -> IO (Either String String)
 downloadURL url = do
