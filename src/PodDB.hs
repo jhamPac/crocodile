@@ -2,8 +2,10 @@ module PodDB where
 
 import           Control.Monad         (unless, void, when)
 import           Data.List             (sort)
-import           Database.HDBC
-import           Database.HDBC.Sqlite3
+import           Database.HDBC         (IConnection (commit, getTables, run),
+                                        SqlValue, fromSql, handleSql,
+                                        quickQuery', toSql)
+import           Database.HDBC.Sqlite3 (Connection, connectSqlite3)
 import           PodTypes              (Episode (..), Podcast (..))
 
 connect :: FilePath -> IO Connection
@@ -86,7 +88,7 @@ getPodcast conn id = do
 
 convPodcastRow :: [SqlValue] -> Podcast
 convPodcastRow [svID, svURL] =
-    Podcast {castID = fromSql svID, castURL = fromSql svURL}
+    Podcast { castID = fromSql svID, castURL = fromSql svURL }
 
 convPodcastRow s = error $ "Can't convert podcast row " ++ show s
 
@@ -95,11 +97,10 @@ getPodcastEpisodes conn pc = do
     r <- quickQuery' conn "SELECT epid, epurl, epdone FROM episodes WHERE epcastid = ?" [toSql (castID pc)]
     pure (map convEpisodeRow r)
     where
-        convEpisodeRow [svID, svURL, svDone] = Episode {
-            epID = fromSql svID
-            , epURL = fromSql svURL
-            , epDone = fromSql svDone
-            , epCast = pc
-        }
+        convEpisodeRow [svID, svURL, svDone] =
+            Episode { epID = fromSql svID
+                    , epURL = fromSql svURL
+                    , epDone = fromSql svDone
+                    , epCast = pc }
 
         convEpisodeRow s = error $ "Can't convert episodes row " ++ show s

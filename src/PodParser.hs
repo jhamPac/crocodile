@@ -13,26 +13,26 @@ import           Text.XML.HaXml.Html.Generate (showattr)
 import           Text.XML.HaXml.Parse         (xmlParse)
 import           Text.XML.HaXml.Posn          (Posn, noPos)
 
-data PodItem = PodItem {
-                        itemTitle      :: String
-                        , enclosureURL :: String
-                        } deriving (Eq, Show, Read)
+data PodItem =
+    PodItem { itemTitle    :: String
+            , enclosureURL :: String }
+            deriving (Eq, Show, Read)
 
-data Feed = Feed {
-                channelTitle :: String
-                , items      :: [PodItem]
-                } deriving (Eq, Show, Read)
+data Feed =
+    Feed { channelTitle :: String
+         , items        :: [PodItem] }
+         deriving (Eq, Show, Read)
 
 item2ep :: Podcast -> PodItem -> Episode
 item2ep pc item =
-    Episode {epID = 0,
-             epCast = pc,
-             epURL = enclosureURL item,
-             epDone = False}
+    Episode { epID = 0,
+            epCast = pc,
+            epURL = enclosureURL item,
+            epDone = False }
 
 parse :: String -> String -> Feed
 parse content name =
-    Feed {channelTitle = getTitle doc, items = getEnclosures doc}
+    Feed { channelTitle = getTitle doc, items = getEnclosures doc }
     where
         parseResult = xmlParse name $ stripUnicodeBOM content
         doc = getContent parseResult
