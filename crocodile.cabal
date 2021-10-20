@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       PodDB
+      PodDownload
       PodParser
       PodTypes
       Query
@@ -36,8 +37,10 @@ library
   build-depends:
       HDBC
     , HDBC-sqlite3
+    , HTTP
     , HaXml
     , base >=4.7 && <5
+    , network-uri
     , text
   default-language: Haskell2010
 
@@ -51,9 +54,11 @@ executable crocodile-exe
   build-depends:
       HDBC
     , HDBC-sqlite3
+    , HTTP
     , HaXml
     , base >=4.7 && <5
     , crocodile
+    , network-uri
     , text
   default-language: Haskell2010
 
@@ -68,8 +73,10 @@ test-suite crocodile-test
   build-depends:
       HDBC
     , HDBC-sqlite3
+    , HTTP
     , HaXml
     , base >=4.7 && <5
     , crocodile
+    , network-uri
     , text
   default-language: Haskell2010
