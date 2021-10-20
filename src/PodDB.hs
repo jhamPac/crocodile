@@ -10,21 +10,21 @@ import           PodTypes              (Episode (..), Podcast (..))
 
 connect :: FilePath -> IO Connection
 connect fp = do
-    dbh <- connectSqlite3 fp
-    prepDB dbh
-    pure dbh
+    conn <- connectSqlite3 fp
+    prepDB conn
+    pure conn
 
 prepDB :: IConnection conn => conn -> IO ()
-prepDB dbh = do
-    tables <- getTables dbh
+prepDB conn = do
+    tables <- getTables conn
     unless (elem "podcasts" tables) $ do
-        run dbh "CREATE TABLE podcasts (\
+        run conn "CREATE TABLE podcasts (\
                     \castid INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\
                     \casturl TEXT NOT NULL UNIQUE)" []
         pure ()
 
     unless (elem "episodes" tables) $ do
-        run dbh "CREATE TABLE episodes (\
+        run conn "CREATE TABLE episodes (\
                     \epid INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\
                     \epcastid INTEGER NOT NULL,\
                     \epurl TEXT NOT NULL,\
@@ -33,13 +33,13 @@ prepDB dbh = do
                     \UNIQUE(epcastid, epid))" []
         pure ()
 
-    commit dbh
+    commit conn
 
 addPodcast :: IConnection conn => conn -> Podcast -> IO Podcast
-addPodcast dbh podcast =
+addPodcast conn podcast =
     handleSql errorHandler $ do
-        run dbh "INSERT INTO podcasts (casturl) VALUES (?)" [toSql (castURL podcast)]
-        r <- quickQuery' dbh "SELECT castid FROM podcasts WHERE casturl = ?" [toSql (castURL podcast)]
+        run conn "INSERT INTO podcasts (casturl) VALUES (?)" [toSql (castURL podcast)]
+        r <- quickQuery' conn "SELECT castid FROM podcasts WHERE casturl = ?" [toSql (castURL podcast)]
         case r of
             [[x]] -> pure $ podcast {castID = fromSql x}
             y     -> fail $ "addPodcast: unexpected result: " ++ show y
@@ -47,20 +47,20 @@ addPodcast dbh podcast =
             do fail $ "Error adding podcast; does this URL already exist?\n" ++ show e
 
 addEpisode :: IConnection conn => conn -> Episode -> IO ()
-addEpisode dbh ep =
-    run dbh "INSERT OR IGNORE INTO episodes (epcastid, epurl, epdone) \
+addEpisode conn ep =
+    run conn "INSERT OR IGNORE INTO episodes (epcastid, epurl, epdone) \
                 \Values (?, ?, ?)"
                 [toSql (castID . epCast $ ep), toSql (epURL ep), toSql (epDone ep)]
     >> pure ()
 
 updatePodcast :: IConnection conn => conn -> Podcast -> IO ()
-updatePodcast dbh podcast =
-    let f = run dbh "UPDATE podcasts SET casturl = ? WHERE castid = ?" [toSql (castURL podcast), toSql (castID podcast)]
+updatePodcast conn podcast =
+    let f = run conn "UPDATE podcasts SET casturl = ? WHERE castid = ?" [toSql (castURL podcast), toSql (castID podcast)]
     in Control.Monad.void f
 
 updateEpisode :: IConnection conn => conn -> Episode -> IO ()
-updateEpisode dbh episode =
-    run dbh "UPDATE episodes SET epcastid = ?, epurl = ?, epdone = ? Where epid = ?"
+updateEpisode conn episode =
+    run conn "UPDATE episodes SET epcastid = ?, epurl = ?, epdone = ? Where epid = ?"
             [toSql (castID . epCast $ episode),
              toSql (epURL episode),
              toSql (epDone episode),
