@@ -20,13 +20,14 @@ main = withSocketsDo $ handleSqlError $ do
         _ -> syntaxError
     disconnect conn
 
-add :: IConnection conn => conn -> [Char] -> IO ()
+add :: IConnection conn => conn -> String -> IO ()
 add conn url = do
     addPodcast conn pc
     commit conn
     where
         pc = Podcast { castID = 0, castURL = url}
 
+update :: IConnection conn => conn -> IO ()
 update conn = do
     pclist <- getPodcasts conn
     mapM_ procPodcast pclist
@@ -35,6 +36,7 @@ update conn = do
             putStrLn $ "Updating from " ++ castURL pc
             updatePodcastFromFeed conn pc
 
+download :: IConnection conn => conn -> IO ()
 download conn = do
     pclist <- getPodcasts conn
     mapM_ procPodcast pclist
@@ -49,4 +51,5 @@ download conn = do
             putStrLn $ "Downloading " ++ epURL ep
             getEpisode conn ep
 
+syntaxError :: IO ()
 syntaxError = putStrLn "usage is wrong!"
