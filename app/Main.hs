@@ -12,7 +12,7 @@ main = withSocketsDo $ handleSqlError $ do
     args <- getArgs
     conn <- connect "testpoddb.db"
     case args of
-        ["args", url] -> add conn url
+        ["add", url] -> add conn url
         ["update"] ->    update conn
         ["download"] ->  download conn
         ["fetch"] -> do update conn
@@ -20,6 +20,7 @@ main = withSocketsDo $ handleSqlError $ do
         _ -> syntaxError
     disconnect conn
 
+add :: IConnection conn => conn -> [Char] -> IO ()
 add conn url = do
     addPodcast conn pc
     commit conn
