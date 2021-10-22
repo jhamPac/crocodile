@@ -27,6 +27,7 @@ dependencies:
     - HDBC-sqlite3
     - HaXml
     - network-uri
+    - network
 
 library:
     source-dirs: src
